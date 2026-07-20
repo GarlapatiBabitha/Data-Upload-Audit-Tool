@@ -4,10 +4,6 @@ import requests
 import pandas as pd
 from io import BytesIO
 
-# =========================
-# PAGE CONFIG
-# =========================
-
 st.set_page_config(
     page_title="Reports",
     page_icon="📄",

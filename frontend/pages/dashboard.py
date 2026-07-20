@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
+import json
 
 st.set_page_config(
     page_title="Dashboard",
@@ -254,25 +255,31 @@ for index,row in df.iterrows():
                 st.rerun()
 st.divider()
 
-# =============================
-# REPORT DETAILS (FINAL WORKING)
-# =============================
-
-import json
-
-# ✅ Ensure session state exists
+# Ensure session state exists
 if "selected_file" not in st.session_state:
     st.session_state["selected_file"] = None
 
-
-# ✅ Show report only if selected
+# Show report only if selected
 if st.session_state["selected_file"] is not None:
 
     selected_id = st.session_state["selected_file"]
 
-    report = df[df["id"] == selected_id].iloc[0]
+    # Fetch latest data from backend
+    try:
+        response = requests.get(
+            "http://127.0.0.1:5000/history",
+            timeout=10
+        )
+        fresh_data = response.json()
+        fresh_df = pd.DataFrame(fresh_data)
+    except:
+        st.error("Failed to fetch data from DB")
+        st.stop()
 
-    # ✅ Convert validation safely
+    # Filter using ID
+    report = fresh_df[fresh_df["id"] == selected_id].iloc[0]
+
+    # Convert validation safely
     validation = report["validation"]
     if isinstance(validation, str):
         try:
@@ -283,18 +290,14 @@ if st.session_state["selected_file"] is not None:
     st.divider()
     st.header("📄 Audit Report")
 
-    # =============================
-    # CLOSE BUTTON
-    # =============================
+    # Close button
     if st.button("❌ Close Report"):
         st.session_state["selected_file"] = None
         st.rerun()
 
     st.divider()
 
-    # =============================
-    # STATUS DISPLAY
-    # =============================
+    # Status display
     status = report.get("status", "Failed")
 
     if status == "Success":
@@ -305,7 +308,7 @@ if st.session_state["selected_file"] is not None:
         st.error("🔴 Audit Failed")
 
     # =============================
-    # FILE METADATA
+    # FILE METADATA (FROM DB)
     # =============================
     st.header("📄 File Metadata")
 
@@ -321,36 +324,16 @@ if st.session_state["selected_file"] is not None:
     st.divider()
 
     # =============================
-    # DATASET SUMMARY
-    # =============================
-    st.header("📊 Dataset Summary")
-
-    rows = report.get("rows", 0)
-    cols = report.get("columns", 0)
-    duplicates = validation.get("duplicates", 0) if isinstance(validation, dict) else 0
-
-    s1, s2, s3 = st.columns(3)
-
-    s1.metric("Total Rows", rows)
-    s2.metric("Total Columns", cols)
-    s3.metric("Duplicate Rows", duplicates)
-
-    st.divider()
-
-    # =============================
-    # VALIDATION REPORT
+    # VALIDATION REPORT (ONLY STORED PART)
     # =============================
     st.header("🔍 Validation Report")
 
     if not isinstance(validation, dict) or not validation:
-        st.error("No validation data available (file may be empty or corrupted)")
+        st.error("No validation data available")
     else:
 
-        # -------------------------
         # Missing Values
-        # -------------------------
         st.subheader("Missing Values")
-
         if validation.get("missing_values"):
             st.dataframe(
                 pd.DataFrame(validation["missing_values"]),
@@ -359,39 +342,29 @@ if st.session_state["selected_file"] is not None:
         else:
             st.success("✅ No missing values detected")
 
-        # -------------------------
-        # Duplicate Rows
-        # -------------------------
-        st.subheader("Duplicate Rows")
-        st.info(validation.get("duplicates", 0))
+        # Duplicate Rows (only if present)
+        if "duplicates" in validation:
+            st.subheader("Duplicate Rows")
+            st.info(validation.get("duplicates", 0))
 
-        # -------------------------
         # Schema Validation
-        # -------------------------
         st.subheader("Schema Validation")
-
         if validation.get("schema_errors"):
             for err in validation["schema_errors"]:
                 st.error(err)
         else:
             st.success("✅ Schema is correct")
 
-        # -------------------------
         # Additional Checks
-        # -------------------------
         st.subheader("Additional Checks")
-
         if validation.get("additional_checks"):
             for item in validation["additional_checks"]:
                 st.write("✅", item)
         else:
             st.info("No additional issues found")
 
-        # -------------------------
         # Data Types
-        # -------------------------
         st.subheader("Column Data Types")
-
         datatypes = validation.get("datatypes", {})
 
         if datatypes:

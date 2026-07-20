@@ -2,9 +2,6 @@ def validate_data(df):
 
     validation = {}
 
-    # -------------------------
-    # Missing Values
-    # -------------------------
     missing_values = []
     missing = df.isnull().sum()
 
@@ -16,16 +13,10 @@ def validate_data(df):
             })
 
     validation["missing_values"] = missing_values
-
-    # -------------------------
-    # Duplicate Rows
-    # -------------------------
+    
     duplicates = int(df.duplicated().sum())
     validation["duplicates"] = duplicates
 
-    # -------------------------
-    # Schema Validation
-    # -------------------------
     schema_errors = []
 
     for column in df.columns:
@@ -39,9 +30,6 @@ def validate_data(df):
 
     validation["schema_errors"] = schema_errors
 
-    # -------------------------
-    # Data Types
-    # -------------------------
     datatypes = {}
     type_issues = []
 
@@ -57,9 +45,6 @@ def validate_data(df):
     validation["datatypes"] = datatypes
     validation["type_issues"] = type_issues
 
-    # -------------------------
-    # Consistency Check
-    # -------------------------
     consistency_issues = []
 
     for column in df.columns:
@@ -69,10 +54,7 @@ def validate_data(df):
             consistency_issues.append(f"{column} has too many repeated values")
 
     validation["consistency_issues"] = consistency_issues
-
-    # -------------------------
-    # Additional Info
-    # -------------------------
+    
     additional_checks = []
 
     empty_rows = int(df.isnull().all(axis=1).sum())

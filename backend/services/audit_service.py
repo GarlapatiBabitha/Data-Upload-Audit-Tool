@@ -47,11 +47,9 @@ def audit_file(file_path, file_name, file_size, user):
     validation = validate_data(df)
     score = calculate_score(df, validation)
 
-    # STATUS LOGIC
-    if score >= 90:
+    # STATUS LOGIC (ONLY SUCCESS / FAILED)
+    if score >= 80:
         status = "Success"
-    elif score >= 75:
-        status = "Warning"
     else:
         status = "Failed"
 
