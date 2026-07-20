@@ -1,3 +1,4 @@
+   
 import streamlit as st
 import requests
 import pandas as pd
@@ -147,22 +148,48 @@ if not data:
     st.stop()
 
 df = pd.DataFrame(data)
+original_df = df.copy()
+
+# 🔍 Search / Score Filter
+search = st.text_input("🔍 Search files or enter minimum score", "")
+
+if search:
+    search_lower = search.lower()
+
+    # If user enters a number → filter by score
+    if search.isdigit():
+        score_filter = float(search)
+        df = df[df["score"] >= score_filter]
+
+    else:
+        # Normal text search
+        df = df[
+            df.apply(
+                lambda row: (
+                    search_lower in str(row.get("filename", "")).lower()
+                    or search_lower in str(row.get("user", "")).lower()
+                    or search_lower in str(row.get("status", "")).lower()
+                ),
+                axis=1
+            )
+        ]
+        
 st.subheader(
     "📈 Summary"
 )
-total = len(df)
+total = len(original_df)
 success = len(
-    df[
-        df["status"]=="Success"
+    original_df[
+        original_df["status"]=="Success"
     ]
 )
 failed = len(
-    df[
-        df["status"]=="Failed"
+    original_df[
+        original_df["status"]=="Failed"
     ]
 )
 avg_score = round(
-    df["score"].mean(),
+    original_df["score"].mean(),
     2
 )
 c1,c2,c3,c4 = st.columns(4)
@@ -216,7 +243,7 @@ st.subheader(
     "📂 Uploaded Files"
 )
 columns = st.columns(2)
-for index,row in df.iterrows():
+for index, row in df.reset_index(drop=True).iterrows():
     with columns[index % 2]:
         with st.container():
             st.markdown(
@@ -377,3 +404,11 @@ if st.session_state["selected_file"] is not None:
             )
         else:
             st.warning("No datatype info available")
+    
+    
+    
+    
+    
+    
+    
+    
