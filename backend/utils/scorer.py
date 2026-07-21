@@ -5,7 +5,6 @@ def calculate_score(df, validation):
 
     total_cells = df.shape[0] * df.shape[1]
 
-    # 🚨 If dataset empty → score 0
     if total_cells == 0:
         return 0
 

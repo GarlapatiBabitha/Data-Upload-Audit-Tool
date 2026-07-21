@@ -1,4 +1,3 @@
-
 import streamlit as st
 import requests
 import pandas as pd
@@ -9,10 +8,6 @@ st.set_page_config(
     page_icon="📄",
     layout="wide"
 )
-
-# =========================
-# DARK THEME
-# =========================
 
 st.markdown("""
 <style>
@@ -108,18 +103,10 @@ div.stDownloadButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# TITLE
-# =========================
-
 st.markdown(
     "<h1 style='text-align:center;'>📄 Audit Reports</h1>",
     unsafe_allow_html=True
 )
-
-# =========================
-# FETCH DATA
-# =========================
 
 try:
     response = requests.get(
@@ -147,10 +134,6 @@ if not data:
 
 df = pd.DataFrame(data)
 
-# =========================
-# SUMMARY CARDS
-# =========================
-
 st.subheader("📊 Report Summary")
 
 total_uploads = len(df)
@@ -166,10 +149,6 @@ col3.metric("Failed", failed_count)
 col4.metric("Average Score", f"{average_score}%")
 
 st.divider()
-
-# =========================
-# TABLE
-# =========================
 
 st.subheader("📋 Upload History")
 
@@ -188,10 +167,6 @@ df_display.rename(columns={
 df_display = df_display[
     ["S.No", "File Name", "Username", "Timestamp", "Score", "Status"]
 ]
-
-# =========================
-# CUSTOM TABLE HTML
-# =========================
 
 table_html = "<table class='custom-table'><tr>"
 
@@ -213,10 +188,6 @@ table_html += "</table>"
 st.markdown(table_html, unsafe_allow_html=True)
 
 st.divider()
-
-# =========================
-# DOWNLOAD
-# =========================
 
 st.subheader("📥 Download Full Report")
 

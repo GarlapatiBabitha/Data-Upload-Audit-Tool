@@ -8,8 +8,6 @@ from utils.scorer import calculate_score
 def audit_file(file_path, file_name, file_size, user):
 
     df, file_error = load_file(file_path)
-
-    # 🚨 FILE LEVEL FAILURE
     if file_error:
 
         metadata = {
