@@ -1,15 +1,11 @@
-version: "3.9"
-
 services:
-
   backend:
     build: ./backend
     container_name: audit_backend
     ports:
       - "5000:5000"
     volumes:
-      - ./backend/database:/app/database
-      - ./backend/uploads:/app/uploads
+      - ./backend:/app
     restart: always
 
   frontend:
@@ -17,6 +13,10 @@ services:
     container_name: audit_frontend
     ports:
       - "8501:8501"
+    environment:
+      - API_URL=http://backend:5000   
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
     restart: always
