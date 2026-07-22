@@ -1,3 +1,4 @@
+
 import pandas as pd
 
 def validate_data(df):
@@ -52,6 +53,7 @@ def validate_data(df):
                 )
     validation["datatypes"] = datatypes
     validation["type_issues"] = type_issues
+
 
     # Consistency Check
     consistency_issues = []
