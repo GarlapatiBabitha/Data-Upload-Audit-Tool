@@ -1,6 +1,5 @@
-
 import streamlit as st
-import requests
+from utils.api import get_history
 import pandas as pd
 from io import BytesIO
 
@@ -114,33 +113,12 @@ st.markdown(
     "<h1 style='text-align:center;'>📄 Audit Reports</h1>",
     unsafe_allow_html=True
 )
-
-# Fetch data
-try:
-    response = requests.get(
-        "http://127.0.0.1:5000/history",
-        # "http://backend:5000/history",
-        timeout=10
-    )
-
-    if response.status_code != 200:
-        st.error("Unable to fetch reports from backend")
-        st.stop()
-
-    data = response.json()
-
-except requests.exceptions.ConnectionError:
-    st.error("Backend server is not running")
-    st.stop()
-
-except Exception as e:
-    st.error(str(e))
-    st.stop()
+data = get_history()
 
 if not data:
-    st.info("No audit records available")
+    st.warning("No audit records available or backend not connected")
     st.stop()
-
+    
 df = pd.DataFrame(data)
 
 # ===================== SUMMARY =====================

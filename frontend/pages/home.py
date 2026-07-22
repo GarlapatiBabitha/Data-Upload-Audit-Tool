@@ -1,5 +1,6 @@
+
 import streamlit as st
-import requests
+from utils.api import upload_file
 import pandas as pd   # ✅ needed for datatypes fix
 
 st.set_page_config(
@@ -183,26 +184,11 @@ if uploaded_file and run_btn:
         "user": username.strip()
     }
 
-    try:
-        response = requests.post(
-            "http://127.0.0.1:5000/upload",
-            # "http://backend:5000",
-            files=files,
-            data=data,
-            timeout=30
-        )
-        result = response.json()
-
-    except requests.exceptions.ConnectionError:
-        st.error("Backend server is not running")
-        st.stop()
-
-    except Exception as e:
-        st.error(str(e))
-        st.stop()
+    result = upload_file(uploaded_file, username.strip())
 
     if "error" in result:
         st.error(result["error"])
+        st.stop()
 
     else:
         st.success("✅ Audit Completed Successfully")

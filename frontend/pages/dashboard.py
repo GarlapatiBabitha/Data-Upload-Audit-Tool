@@ -1,6 +1,6 @@
 
 import streamlit as st
-import requests
+from utils.api import get_history
 import pandas as pd
 import json
 
@@ -136,15 +136,10 @@ div[data-testid="stDataFrame"] * {
 st.title("📊 Dashboard")
 
 # ================= FETCH =================
-try:
-    data = requests.get("http://127.0.0.1:5000/history").json()
-    # data = requests.get("http://backend:5000/history").json()
-except:
-    st.error("Backend not running")
-    st.stop()
+data = get_history()
 
 if not data:
-    st.info("No uploaded files found")
+    st.warning("No data found or backend not connected")
     st.stop()
 
 df = pd.DataFrame(data)
@@ -283,5 +278,6 @@ else:
             if st.button("View Details", key=f"id_{row['id']}"):
                 st.session_state["selected_file"] = row["id"]
                 st.rerun()
+
 
 
