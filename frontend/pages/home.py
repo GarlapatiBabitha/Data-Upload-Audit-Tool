@@ -1,7 +1,6 @@
-
 import streamlit as st
 from utils.api import upload_file
-import pandas as pd   # ✅ needed for datatypes fix
+import pandas as pd 
 
 st.set_page_config(
     page_title="Data Audit Tool",
