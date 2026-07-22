@@ -186,6 +186,7 @@ if uploaded_file and run_btn:
     try:
         response = requests.post(
             "http://127.0.0.1:5000/upload",
+            # "http://backend:5000",
             files=files,
             data=data,
             timeout=30

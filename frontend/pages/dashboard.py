@@ -138,6 +138,7 @@ st.title("📊 Dashboard")
 # ================= FETCH =================
 try:
     data = requests.get("http://127.0.0.1:5000/history").json()
+    # data = requests.get("http://backend:5000/history").json()
 except:
     st.error("Backend not running")
     st.stop()
