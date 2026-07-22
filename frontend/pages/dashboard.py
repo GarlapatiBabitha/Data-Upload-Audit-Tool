@@ -6,6 +6,10 @@ import json
 
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
+# ================= SESSION =================
+if "selected_file" not in st.session_state:
+    st.session_state["selected_file"] = None
+
 # ================= CSS =================
 st.markdown("""
 <style>
@@ -40,7 +44,7 @@ section[data-testid="stSidebar"] * {
     font-size:25px;
 }
 .summary-card h1 {
-    margin:-5px 0 0 0;  /* 🔥 moves number up */
+    margin:-5px 0 0 0;
     font-size:34px;
 }
 .total-card { background:#2563EB; }
@@ -48,7 +52,7 @@ section[data-testid="stSidebar"] * {
 .failed-card { background:#DC2626; }
 .score-card { background:#9333EA; }
 
-/* ===== FILE CARDS (ORIGINAL STYLE) ===== */
+/* ===== FILE CARDS ===== */
 .file-card {
     background:#1F2937;
     padding:25px;
@@ -108,30 +112,21 @@ div.stButton > button {
 div.stButton > button:hover {
     background:#4B5563;
 }
-/* ===== FIX TEXT VISIBILITY ===== */
 
-/* Main titles */
-h1, h2, h3, h4, h5, h6 {
+/* ===== TEXT FIX ===== */
+h1, h2, h3, h4, h5, h6,
+label, .stMarkdown, .stSubheader {
     color: white !important;
 }
 
-/* Streamlit labels, inputs, text */
-label, .stTextInput label, .stMarkdown, .stSubheader {
-    color: white !important;
-}
-
-/* Search input text */
 input {
     color: white !important;
     background-color:#1F2937 !important;
 }
-
-/* Placeholder text */
 input::placeholder {
     color:#9CA3AF !important;
 }
 
-/* Fix dataframe / tables text */
 div[data-testid="stDataFrame"] * {
     color: white !important;
 }
@@ -167,72 +162,15 @@ if search:
             s in str(r["user"]).lower() or
             s in str(r["status"]).lower(), axis=1)]
 
-# ================= SUMMARY =================
-st.subheader("📈 Summary")
-
-c1,c2,c3,c4 = st.columns(4)
-
-c1.markdown(f"<div class='summary-card total-card'><h4>Total Uploads</h4><h1>{len(original_df)}</h1></div>", True)
-c2.markdown(f"<div class='summary-card success-card'><h4>Successful</h4><h1>{len(original_df[original_df['status']=='Success'])}</h1></div>", True)
-c3.markdown(f"<div class='summary-card failed-card'><h4>Failed</h4><h1>{len(original_df[original_df['status']=='Failed'])}</h1></div>", True)
-c4.markdown(f"<div class='summary-card score-card'><h4>Average Score</h4><h1>{round(original_df['score'].mean(),2)}%</h1></div>", True)
-
-st.divider()
-
-# ================= FILE CARDS =================
-st.subheader("📂 Uploaded Files")
-
-cols = st.columns(2)
-
-for i, row in df.reset_index(drop=True).iterrows():
-    with cols[i % 2]:
-
-        st.markdown(f"""
-        <div class="file-card">
-
-        <div class="file-title">
-        📄 {row['filename']}
-        </div>
-
-        <br>
-
-        <h4>
-        {"🟢 Success" if row['status']=="Success" else "🔴 Failed"}
-        </h4>
-
-        <p class="small-text">
-        👤 Uploaded By : {row['user']}
-        </p>
-
-        <p class="small-text">
-        📅 Date : {row['date']}
-        </p>
-
-        <h3>
-        ⭐ {row['score']}%
-        </h3>
-
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("View Details", key=f"id_{row['id']}"):
-            st.session_state["selected_file"] = row["id"]
-            st.rerun()
-
-# ================= REPORT =================
-if "selected_file" not in st.session_state:
-    st.session_state["selected_file"] = None
-
+# ================= REPORT (TOP VIEW) =================
 if st.session_state["selected_file"]:
 
-    report = pd.DataFrame(requests.get("http://127.0.0.1:5000/history").json())
-    report = report[report["id"] == st.session_state["selected_file"]].iloc[0]
+    report_df = pd.DataFrame(data)
+    report = report_df[report_df["id"] == st.session_state["selected_file"]].iloc[0]
 
     validation = report["validation"]
     if isinstance(validation, str):
         validation = json.loads(validation)
-
-    st.divider()
 
     col1, col2 = st.columns([6,1])
     with col1:
@@ -244,7 +182,7 @@ if st.session_state["selected_file"]:
 
     st.divider()
 
-    # ===== META CARDS =====
+    # ===== META =====
     st.header("📄 File Metadata")
 
     m1,m2,m3,m4 = st.columns(4)
@@ -290,8 +228,59 @@ if st.session_state["selected_file"]:
 
     st.markdown(dt_df.to_html(index=False), True)
 
+# ================= DASHBOARD =================
+else:
 
+    # ===== SUMMARY =====
+    st.subheader("📈 Summary")
 
+    c1,c2,c3,c4 = st.columns(4)
 
+    c1.markdown(f"<div class='summary-card total-card'><h4>Total Uploads</h4><h1>{len(original_df)}</h1></div>", True)
+    c2.markdown(f"<div class='summary-card success-card'><h4>Successful</h4><h1>{len(original_df[original_df['status']=='Success'])}</h1></div>", True)
+    c3.markdown(f"<div class='summary-card failed-card'><h4>Failed</h4><h1>{len(original_df[original_df['status']=='Failed'])}</h1></div>", True)
+    c4.markdown(f"<div class='summary-card score-card'><h4>Average Score</h4><h1>{round(original_df['score'].mean(),2)}%</h1></div>", True)
+
+    st.divider()
+
+    # ===== FILE CARDS =====
+    st.subheader("📂 Uploaded Files")
+
+    cols = st.columns(2)
+
+    for i, row in df.reset_index(drop=True).iterrows():
+        with cols[i % 2]:
+
+            st.markdown(f"""
+            <div class="file-card">
+
+            <div class="file-title">
+            📄 {row['filename']}
+            </div>
+
+            <br>
+
+            <h4>
+            {"🟢 Success" if row['status']=="Success" else "🔴 Failed"}
+            </h4>
+
+            <p class="small-text">
+            👤 Uploaded By : {row['user']}
+            </p>
+
+            <p class="small-text">
+            📅 Date : {row['date']}
+            </p>
+
+            <h3>
+            ⭐ {row['score']}%
+            </h3>
+
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button("View Details", key=f"id_{row['id']}"):
+                st.session_state["selected_file"] = row["id"]
+                st.rerun()
 
 

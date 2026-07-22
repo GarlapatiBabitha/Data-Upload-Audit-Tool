@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build: ./backend
+    container_name: audit_backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/database:/app/database
+      - ./backend/uploads:/app/uploads
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: audit_frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    restart: always
